@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { getSignedMediaUrl } from "@/lib/supabase/storage";
 import { readLocalSubmissions, writeLocalSubmissions } from "@/lib/local-submissions";
 import { checkAdmin } from "@/app/admin/actions";
 import type { Submission } from "@/lib/types";
@@ -11,6 +12,7 @@ export function AdminQueue() {
   const [rows, setRows] = useState<Submission[]>([]);
   const [allowed, setAllowed] = useState(false);
   const [message, setMessage] = useState("");
+  const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
 
   async function load() {
     const access = await checkAdmin();
@@ -26,25 +28,38 @@ export function AdminQueue() {
       .from("submissions")
       .select("*")
       .order("created_at", { ascending: false });
-    setRows(
-      (data ?? []).map((row) => ({
-        id: row.id,
-        userId: row.user_id,
-        displayName: row.display_name,
-        category: row.category,
-        status: row.status,
-        lat: row.lat,
-        lng: row.lng,
-        city: row.city,
-        story: row.story,
-        mediaType: row.media_type,
-        mediaUrl: row.media_path,
-        moderationStatus: row.moderation_status,
-        featured: row.featured,
-        createdAt: row.created_at,
-        spotId: row.spot_id,
-      })),
-    );
+    
+    const submissions = (data ?? []).map((row) => ({
+      id: row.id,
+      userId: row.user_id,
+      displayName: row.display_name,
+      category: row.category,
+      status: row.status,
+      lat: row.lat,
+      lng: row.lng,
+      city: row.city,
+      story: row.story,
+      mediaType: row.media_type,
+      mediaUrl: row.media_path,
+      moderationStatus: row.moderation_status,
+      featured: row.featured,
+      createdAt: row.created_at,
+      spotId: row.spot_id,
+    }));
+    
+    setRows(submissions);
+
+    // Fetch signed URLs for media display
+    const urlMap: Record<string, string> = {};
+    for (const sub of submissions) {
+      if (sub.mediaUrl && !sub.mediaUrl.startsWith("data:")) {
+        const signedUrl = await getSignedMediaUrl(supabase, sub.mediaUrl);
+        if (signedUrl) urlMap[sub.id] = signedUrl;
+      } else if (sub.mediaUrl) {
+        urlMap[sub.id] = sub.mediaUrl; // Local base64
+      }
+    }
+    setMediaUrls(urlMap);
   }
 
   useEffect(() => {
@@ -74,6 +89,16 @@ export function AdminQueue() {
     if (moderationStatus === "approved") {
       const row = rows.find((r) => r.id === id);
       if (row) {
+        // Get signed URL for the media to store in spots table
+        const mediaUrl = await getSignedMediaUrl(supabase, row.mediaUrl);
+        
+        // Update submission with spot_id
+        await supabase
+          .from("submissions")
+          .update({ spot_id: `user-${id}` })
+          .eq("id", id);
+
+        // Create spot on map
         await supabase.from("spots").upsert({
           id: `user-${id}`,
           name: row.story.slice(0, 80) || "Citizen report",
@@ -84,12 +109,15 @@ export function AdminQueue() {
           lng: row.lng,
           state: "Unknown",
           city: row.city,
+          photo_url: mediaUrl,
           source_citation: {
             label: "Citizen submission",
             url: "/sources",
             date: new Date().toISOString().slice(0, 10),
           },
         });
+
+        // Create feed item if featured
         if (featured) {
           await supabase.from("feed_items").upsert({
             id: `sub-${id}`,
@@ -97,7 +125,10 @@ export function AdminQueue() {
             title: row.story.slice(0, 90) || "A cleanup logged on SafaiSetu",
             story: row.story,
             place: row.city ?? "",
+            state: "Unknown",
             source_label: row.displayName,
+            image_url: mediaUrl,
+            spot_id: `user-${id}`,
             featured: true,
             published: true,
             submission_id: id,
@@ -137,9 +168,13 @@ export function AdminQueue() {
               {row.displayName} · {row.category} · {row.status} · {row.city}
             </p>
             <p className="mt-2 text-sm text-paper/75">{row.story}</p>
-            {row.mediaUrl.startsWith("data:") ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={row.mediaUrl} alt="" className="mt-3 max-h-48 rounded-lg" />
+            {mediaUrls[row.id] ? (
+              row.mediaType === "video" ? (
+                <video src={mediaUrls[row.id]} className="mt-3 max-h-48 rounded-lg" controls />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={mediaUrls[row.id]} alt="" className="mt-3 max-h-48 rounded-lg" />
+              )
             ) : null}
             <div className="mt-3 flex flex-wrap gap-2">
               <button
