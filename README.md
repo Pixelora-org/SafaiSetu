@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SafaiSetu
 
-## Getting Started
+A live, map-centered hub for India's civic cleanup movement. Phase 0: the map, an honest stats ticker, a seeded wall of fame, a submission queue, organisations, and this-weekend drives.
 
-First, run the development server:
+The homepage **is** the map. Content is the hook. Local proof and a weekend reason to act are why people come back.
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Public pages (map, feed, orgs, sources) work from the in-repo seed — no cloud account required.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What ships in Phase 0
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- National CPCB river-stretch layer (approximate centroids, labeled as such) plus dense pins for Madhya Pradesh, Mumbai, and Bengaluru
+- Stats ticker with dated citations on `/sources`
+- Reels-style `/feed` seeded with real stories (Bittu Tabahi / Ajnar, Afroz Shah / Versova, The Ugly Indian, PotHoleRaja, Namami Gange)
+- Auth-gated `/submit` when Supabase is connected; same wizard in local demo mode otherwise
+- `/admin` moderation (approve / reject / feature)
+- Organisation directory and a thin this-weekend strip
+- Share cards at `/api/og/[id]`
 
-## Learn More
+## Connect Supabase (auth, storage, live writes)
 
-To learn more about Next.js, take a look at the following resources:
+1. Create a project, enable Google auth, add the callback `{SITE_URL}/auth/callback`.
+2. Copy `.env.example` to `.env.local` and fill `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `ADMIN_EMAILS`.
+3. Run `supabase/migrations/20260908120000_init.sql` in the SQL editor.
+4. In Authentication → Users, set your user's `app_metadata` to `{ "role": "admin" }` so moderation writes pass RLS.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Until that is done, `/submit` stores a pending item on this device and `/admin` can review it there.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app is a standard Next.js project. Import the Git repo in Vercel, set the env vars above for production, and add the production URL to the Google OAuth redirect list and `NEXT_PUBLIC_SITE_URL`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Credibility rules
+
+- Ticker numbers come from `src/data/stats.ts` (or the `stats` table). No invented health figures.
+- Government pins are CPCB 2025 stretch centroids, not station-grade GPS.
+- No Instagram scraping. YouTube ingest is Phase 1.

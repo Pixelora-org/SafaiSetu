@@ -1,0 +1,52 @@
+import type { Stat } from "@/lib/types";
+
+export const STATS: Stat[] = [
+  {
+    key: "polluted_stretches",
+    label: "Polluted river stretches",
+    labelHi: "प्रदूषित नदी खंड",
+    value: 296,
+    asOf: "2025",
+    sourceName: "CPCB, reported to Rajya Sabha",
+    sourceUrl: "https://www.thehindubusinessline.com/news/india-records-decline-in-polluted-river-stretches-over-seven-years/article71245593.ece",
+    notes: "Down from 351 in 2018 and 311 in 2022. BOD > 3 mg/L. Not a SafaiSetu count.",
+  },
+  {
+    key: "priority_one",
+    label: "Priority-I stretches",
+    value: 37,
+    asOf: "2025",
+    sourceName: "CPCB 2025 assessment (via reporting)",
+    sourceUrl: "https://timesofindia.indiatimes.com/india/from-351-in-2018-to-296-in-2025-no-of-polluted-river-stretches-declining/articleshow/124059332.cms",
+    notes: "BOD > 30 mg/L. Figure as reported from the 2025 assessment; we will replace it if the full PDF differs.",
+  },
+  {
+    key: "spots_tracked",
+    label: "Spots on this map",
+    value: 0,
+    asOf: "2026-09-08",
+    sourceName: "SafaiSetu live count",
+    sourceUrl: "/sources",
+    live: true,
+    notes: "Government baseline pins plus citizen and curated action pins currently on the map.",
+  },
+  {
+    key: "cleanups_week",
+    label: "Cleanups logged this week",
+    value: 0,
+    asOf: "2026-09-08",
+    sourceName: "SafaiSetu live count",
+    sourceUrl: "/sources",
+    live: true,
+    notes: "Approved submissions in the last 7 days. Zero until the first ones clear moderation.",
+  },
+  {
+    key: "cities_active",
+    label: "Cities with a pin",
+    value: 0,
+    asOf: "2026-09-08",
+    sourceName: "SafaiSetu live count",
+    sourceUrl: "/sources",
+    live: true,
+  },
+];

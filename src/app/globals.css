@@ -1,26 +1,214 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0e1412;
+  --ink-soft: #1c2622;
+  --paper: #f4efe6;
+  --paper-dim: #e7dfd0;
+  --river: #1a6b6a;
+  --river-bright: #2ec4b6;
+  --earth: #c45c26;
+  --marigold: #e8a317;
+  --cleaned: #3d8b5a;
+  --govt: #8a9aa0;
+  --danger: #c23b22;
+  --glass: color-mix(in srgb, var(--ink) 72%, transparent);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-dim: var(--paper-dim);
+  --color-river: var(--river);
+  --color-river-bright: var(--river-bright);
+  --color-earth: var(--earth);
+  --color-marigold: var(--marigold);
+  --color-cleaned: var(--cleaned);
+  --color-govt: var(--govt);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-figtree);
+  --font-serif: var(--font-newsreader);
+  --font-deva: var(--font-deva);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  background: var(--ink);
+  color: var(--paper);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), "Noto Sans Devanagari", system-ui, sans-serif;
+}
+
+.font-serif {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.font-deva {
+  font-family: var(--font-deva), var(--font-sans), sans-serif;
+}
+
+html:has(.ss-map-shell) .ss-app-main,
+html:has(.feed-snap) .ss-app-main {
+  overflow: hidden;
+}
+
+.ss-map-shell {
+  position: relative;
+  isolation: isolate;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.ss-map-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ss-map-canvas .leaflet-container {
+  background: #0b1210;
+  font-family: inherit;
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-container {
+  background: #0b1210;
+  font-family: inherit;
+}
+
+/* Tailwind preflight (img max-width/height:auto) blows Leaflet tiles up to the viewport. */
+.leaflet-container img,
+.leaflet-container .leaflet-tile,
+.leaflet-pane img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.leaflet-container img.leaflet-tile {
+  mix-blend-mode: normal !important;
+}
+
+.leaflet-div-icon {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-control-attribution {
+  background: color-mix(in srgb, var(--ink) 70%, transparent) !important;
+  color: #b7c2bc !important;
+  font-size: 10px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--river-bright) !important;
+}
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: color-mix(in srgb, var(--river) 55%, transparent);
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: var(--ink-soft);
+  color: var(--paper);
+  font-weight: 600;
+}
+
+@keyframes pin-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--marigold) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.pin-pulse {
+  animation: pin-pulse 2.2s ease-out infinite;
+}
+
+.ss-pin {
+  width: 14px;
+  height: 14px;
+  background: var(--pin);
+  border: 2px solid #f4efe6;
+  box-sizing: border-box;
+}
+
+.ss-pin-circle {
+  border-radius: 999px;
+}
+
+.ss-pin-diamond {
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
+
+.ss-pin-square {
+  border-radius: 3px;
+}
+
+.ss-pin-ring {
+  border-radius: 999px;
+  background: transparent;
+  border-width: 3px;
+  border-color: var(--pin);
+}
+
+.ss-cluster {
+  background: transparent;
+}
+
+.ss-cluster-inner {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pin) 85%, #0d1b1e);
+  border: 2px solid color-mix(in srgb, var(--pin) 40%, #f4efe6);
+  color: #f4efe6;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ticker {
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+
+.feed-snap {
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+
+.feed-snap::-webkit-scrollbar {
+  display: none;
+}
+
+.feed-slide {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
