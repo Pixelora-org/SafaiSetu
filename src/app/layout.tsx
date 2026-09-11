@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree, Newsreader, Noto_Sans_Devanagari } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import { NavBar } from "@/components/layout/NavBar";
 import "./globals.css";
 
@@ -39,14 +40,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${figtree.variable} ${newsreader.variable} ${deva.variable} h-full antialiased`}
-    >
-      <body className="flex h-full flex-col overflow-hidden bg-ink text-paper">
-        <NavBar />
-        <div className="ss-app-main relative min-h-0 flex-1 overflow-y-auto">{children}</div>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${figtree.variable} ${newsreader.variable} ${deva.variable} h-full antialiased`}
+      >
+        <body className="flex h-full flex-col overflow-hidden bg-ink text-paper">
+          <NavBar />
+          <div className="ss-app-main relative min-h-0 flex-1 overflow-y-auto">{children}</div>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

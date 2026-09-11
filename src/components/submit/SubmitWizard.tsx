@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { CATEGORIES, STATUSES } from "@/lib/categories";
 import { INDIA_CENTER } from "@/lib/geo";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -19,6 +20,7 @@ type Step = 1 | 2 | 3 | 4 | 5;
 
 export function SubmitWizard() {
   const router = useRouter();
+  const { user, isSignedIn } = useUser();
   const [step, setStep] = useState<Step>(1);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
@@ -67,6 +69,7 @@ export function SubmitWizard() {
     setPending(true);
 
     try {
+      // Handle demo mode (no Supabase)
       if (!isSupabaseConfigured()) {
         const reader = new FileReader();
         const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -76,7 +79,7 @@ export function SubmitWizard() {
         });
         upsertLocalSubmission({
           id: crypto.randomUUID(),
-          displayName: "You",
+          displayName: user?.fullName ?? "You",
           category,
           status,
           lat,
@@ -93,14 +96,16 @@ export function SubmitWizard() {
         return;
       }
 
-      const supabase = createClient();
-      if (!supabase) throw new Error("Auth is not configured.");
-      const { data: claimsData } = await supabase.auth.getClaims();
-      const userId = claimsData?.claims?.sub as string | undefined;
-      if (!userId) {
-        router.push("/login?next=/submit");
+      // Check Clerk authentication
+      if (!isSignedIn || !user) {
+        router.push("/login");
         return;
       }
+
+      const supabase = createClient();
+      if (!supabase) throw new Error("Supabase is not configured.");
+      
+      const userId = user.id;
       const path = `${userId}/${crypto.randomUUID()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from("submissions")
@@ -109,7 +114,7 @@ export function SubmitWizard() {
 
       const { error: insertError } = await supabase.from("submissions").insert({
         user_id: userId,
-        display_name: (claimsData?.claims?.email as string) ?? "Citizen",
+        display_name: user.fullName ?? user.emailAddresses[0]?.emailAddress ?? "Citizen",
         category,
         status,
         lat,
@@ -140,6 +145,10 @@ export function SubmitWizard() {
       {!isSupabaseConfigured() ? (
         <p className="mt-3 rounded-xl border border-marigold/40 bg-marigold/10 px-3 py-2 text-xs text-marigold">
           Demo mode: this stays on your device until Supabase is connected. Same flow, local queue.
+        </p>
+      ) : !isSignedIn ? (
+        <p className="mt-3 rounded-xl border border-river/40 bg-river/10 px-3 py-2 text-xs text-river-bright">
+          Sign in required to submit cleanups to the live map. Your submission will be reviewed before publishing.
         </p>
       ) : null}
 
