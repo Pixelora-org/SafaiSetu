@@ -89,8 +89,40 @@ export function AdminQueue() {
     if (moderationStatus === "approved") {
       const row = rows.find((r) => r.id === id);
       if (row) {
-        // Get signed URL for the media to store in spots table
-        const mediaUrl = await getSignedMediaUrl(supabase, row.mediaUrl);
+        // Copy media from private submissions bucket to public feed-media bucket
+        let publicMediaUrl: string | null = null;
+        
+        if (row.mediaUrl && !row.mediaUrl.startsWith("data:")) {
+          try {
+            // Download from private bucket
+            const { data: fileData, error: downloadError } = await supabase.storage
+              .from("submissions")
+              .download(row.mediaUrl);
+            
+            if (downloadError) throw downloadError;
+            
+            // Upload to public bucket with stable path
+            const publicPath = `spots/${id}.${row.mediaType === "video" ? "mp4" : "jpg"}`;
+            const { error: uploadError } = await supabase.storage
+              .from("feed-media")
+              .upload(publicPath, fileData, {
+                contentType: row.mediaType === "video" ? "video/mp4" : "image/jpeg",
+                upsert: true,
+              });
+            
+            if (uploadError) throw uploadError;
+            
+            // Get durable public URL
+            const { data: publicUrlData } = supabase.storage
+              .from("feed-media")
+              .getPublicUrl(publicPath);
+            
+            publicMediaUrl = publicUrlData.publicUrl;
+          } catch (err) {
+            console.error("Failed to copy media to public bucket:", err);
+            // Continue without photo - better than failing the approval
+          }
+        }
         
         // Update submission with spot_id
         await supabase
@@ -98,7 +130,7 @@ export function AdminQueue() {
           .update({ spot_id: `user-${id}` })
           .eq("id", id);
 
-        // Create spot on map
+        // Create spot on map with durable public URL
         await supabase.from("spots").upsert({
           id: `user-${id}`,
           name: row.story.slice(0, 80) || "Citizen report",
@@ -109,7 +141,7 @@ export function AdminQueue() {
           lng: row.lng,
           state: "Unknown",
           city: row.city,
-          photo_url: mediaUrl,
+          photo_url: publicMediaUrl,
           source_citation: {
             label: "Citizen submission",
             url: "/sources",
@@ -117,7 +149,7 @@ export function AdminQueue() {
           },
         });
 
-        // Create feed item if featured
+        // Create feed item if featured with durable public URL
         if (featured) {
           await supabase.from("feed_items").upsert({
             id: `sub-${id}`,
@@ -127,7 +159,7 @@ export function AdminQueue() {
             place: row.city ?? "",
             state: "Unknown",
             source_label: row.displayName,
-            image_url: mediaUrl,
+            image_url: publicMediaUrl,
             spot_id: `user-${id}`,
             featured: true,
             published: true,
