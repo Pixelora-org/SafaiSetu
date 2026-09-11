@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { copy } from "@/lib/messages";
 
 const LINKS = [
@@ -13,6 +14,7 @@ const LINKS = [
 
 export function NavBar() {
   const pathname = usePathname();
+  const { isSignedIn } = useUser();
   const hide = pathname === "/feed";
   const onMap = pathname === "/map";
 
@@ -24,7 +26,7 @@ export function NavBar() {
         {copy.brand}
         <span className="font-deva ml-2 text-sm text-river-bright">{copy.brandHi}</span>
       </Link>
-      <nav className="flex items-center gap-1 text-sm">
+      <nav className="flex items-center gap-3 text-sm">
         {LINKS.map((link) => {
           const active = pathname === link.href;
           return (
@@ -43,6 +45,22 @@ export function NavBar() {
             </Link>
           );
         })}
+        {isSignedIn ? (
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8",
+              },
+            }}
+          />
+        ) : (
+          <Link
+            href="/login"
+            className="rounded-full border border-paper/20 px-3 py-1.5 text-paper/80 hover:bg-paper/10"
+          >
+            Sign in
+          </Link>
+        )}
       </nav>
     </header>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 import { readLocalSubmissions } from "@/lib/local-submissions";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -9,6 +10,7 @@ import { getSignedMediaUrl } from "@/lib/supabase/storage";
 import type { Submission } from "@/lib/types";
 
 export function MeClient() {
+  const { user, isSignedIn } = useUser();
   const [rows, setRows] = useState<Submission[]>([]);
   const [email, setEmail] = useState<string | null>(null);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
@@ -19,13 +21,19 @@ export function MeClient() {
       setEmail("demo@local");
       return;
     }
+    
+    if (!isSignedIn || !user) {
+      setEmail(null);
+      return;
+    }
+
     const supabase = createClient();
     if (!supabase) return;
+    
     void (async () => {
-      const { data } = await supabase.auth.getClaims();
-      setEmail((data?.claims?.email as string) ?? null);
-      const userId = data?.claims?.sub as string | undefined;
-      if (!userId) return;
+      setEmail(user.emailAddresses[0]?.emailAddress ?? null);
+      const userId = user.id;
+      
       const { data: list } = await supabase
         .from("submissions")
         .select("*")
@@ -63,7 +71,7 @@ export function MeClient() {
       }
       setMediaUrls(urlMap);
     })();
-  }, []);
+  }, [isSignedIn, user]);
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">

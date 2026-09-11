@@ -1,14 +1,18 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { adminEmails } from "@/lib/supabase/config";
 
 export async function checkAdmin() {
-  const supabase = await createClient();
-  if (!supabase) return { configured: false, ok: true };
-  const { data } = await supabase.auth.getClaims();
-  const email = String(data?.claims?.email ?? "").toLowerCase();
-  const role = (data?.claims?.app_metadata as { role?: string } | undefined)?.role;
+  const user = await currentUser();
+  
+  if (!user) {
+    return { configured: true, ok: false };
+  }
+
+  const email = user.emailAddresses[0]?.emailAddress?.toLowerCase() ?? "";
+  const role = user.publicMetadata?.role as string | undefined;
   const ok = role === "admin" || adminEmails().includes(email);
+  
   return { configured: true, ok, email };
 }
