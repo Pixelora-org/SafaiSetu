@@ -35,6 +35,8 @@ export type MapFeature = {
   cpcbPriority?: 1 | 2 | 3 | 4 | 5;
   dashboardUrl?: string;
   copernicusUrl?: string;
+  rsvpUrl?: string;
+  rsvpLabel?: string;
   color: string;
   fresh?: boolean;
 };
@@ -111,6 +113,8 @@ export type WeekendEvent = {
   whatToBring: string;
   confirmNote: string;
   website?: string;
+  rsvpUrl?: string;
+  rsvpLabel?: string;
 };
 
 export type Stat = {

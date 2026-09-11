@@ -8,4 +8,5 @@ export const ORG_PINS: Record<string, { lat: number; lng: number; place: string 
   "lets-be-the-change": { lat: 12.9716, lng: 77.5946, place: "Bengaluru" },
   "friends-of-lakes": { lat: 13.0465, lng: 77.591, place: "Hebbal lake belt" },
   saahas: { lat: 12.9716, lng: 77.5946, place: "Bengaluru" },
+  sustainblr: { lat: 12.9716, lng: 77.5946, place: "Bengaluru (approx. city center)" },
 };
