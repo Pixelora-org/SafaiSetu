@@ -18,17 +18,29 @@ export function WeekendStrip({
   const cards = (
     <div className={variant === "dock" ? "flex gap-2 overflow-x-auto pb-1" : "flex gap-3 overflow-x-auto pb-1"}>
       {events.map((event) => (
-        <Link
+        <div
           key={event.id}
-          href={`/orgs/${event.orgSlug}`}
           className="min-w-[220px] rounded-xl border border-paper/10 bg-ink p-3"
         >
-          <p className="text-[11px] uppercase tracking-wide text-marigold">
-            {event.city} · {formatIst(event.startsAt)}
-          </p>
-          <p className="mt-1 text-sm font-medium">{event.title}</p>
-          <p className="mt-1 text-xs text-paper/60">{event.orgName}</p>
-        </Link>
+          <Link href={`/orgs/${event.orgSlug}`}>
+            <p className="text-[11px] uppercase tracking-wide text-marigold">
+              {event.city} · {formatIst(event.startsAt)}
+            </p>
+            <p className="mt-1 text-sm font-medium">{event.title}</p>
+            <p className="mt-1 text-xs text-paper/60">{event.orgName}</p>
+          </Link>
+          {event.rsvpUrl ? (
+            <a
+              href={event.rsvpUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-2 inline-block rounded-full bg-marigold px-3 py-1 text-xs font-medium text-ink hover:bg-marigold/90"
+            >
+              {event.rsvpLabel ?? "RSVP on Luma"}
+            </a>
+          ) : null}
+        </div>
       ))}
     </div>
   );

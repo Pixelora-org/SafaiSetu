@@ -36,6 +36,10 @@ Until that is done, `/submit` stores a pending item on this device and `/admin` 
 
 The app is a standard Next.js project. Import the Git repo in Vercel, set the env vars above for production, and add the production URL to the Google OAuth redirect list and `NEXT_PUBLIC_SITE_URL`.
 
+## Weekend events & RSVP
+
+Organizations can list weekend cleanup drives with optional Luma RSVP links. See `EVENTS.md` for details. Phase 1 is link-out only (no API); Phase 2 API sync needs Luma Plus.
+
 ## Credibility rules
 
 - Ticker numbers come from `src/data/stats.ts` (or the `stats` table). No invented health figures.

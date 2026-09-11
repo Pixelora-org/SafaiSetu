@@ -87,6 +87,16 @@ export function PinDrawer({
           : null}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
+        {feature.rsvpUrl ? (
+          <a
+            href={feature.rsvpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-marigold px-3 py-1.5 text-sm font-medium text-ink"
+          >
+            {feature.rsvpLabel ?? "RSVP on Luma"}
+          </a>
+        ) : null}
         {feature.dashboardUrl ? (
           <a
             href={feature.dashboardUrl}

@@ -114,4 +114,18 @@ export const ORGANIZATIONS: Organization[] = [
     verified: true,
     category: "ngo",
   },
+  {
+    id: "org-sustainblr",
+    slug: "sustainblr",
+    name: "SustainBLR",
+    tagline: "Civic and sustainability drives, Bengaluru.",
+    description:
+      "Community group focused on civic engagement and environmental sustainability in Bengaluru. Active on cleanup drives, lake restoration, and local environment projects.",
+    city: "Bengaluru",
+    coverage: ["Karnataka"],
+    website: "https://www.facebook.com/sustainBLR/",
+    howToJoin: "Follow their Facebook and Instagram for upcoming drives and volunteer opportunities.",
+    verified: true,
+    category: "collective",
+  },
 ];

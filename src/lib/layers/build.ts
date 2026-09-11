@@ -71,6 +71,8 @@ function fromEvent(event: WeekendEvent): MapFeature {
     sourceUrl: event.website ?? `/orgs/${event.orgSlug}`,
     href: `/orgs/${event.orgSlug}`,
     orgSlug: event.orgSlug,
+    rsvpUrl: event.rsvpUrl,
+    rsvpLabel: event.rsvpLabel,
     color: "#e8a317",
   };
 }
